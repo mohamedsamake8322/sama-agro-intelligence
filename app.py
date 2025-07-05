@@ -10,6 +10,10 @@ import os
 from PIL import Image
 import io
 import base64
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 # Import utility modules
 from utils.auth import authenticate_user, create_user
