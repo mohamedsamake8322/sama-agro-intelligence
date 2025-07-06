@@ -34,48 +34,47 @@ def display_profile_information():
     """Display and edit user profile information"""
 
     user = st.session_state.user
+    email = user.get("email")
+    if not email:
+        st.error("Adresse email manquante. Impossible de charger le profil.")
+        return
 
     # Profile header
     col1, col2 = st.columns([1, 3])
-
     with col1:
-        # Profile avatar placeholder
-        st.image(f"https://via.placeholder.com/150x150?text={user['name'][0]}", width=150)
+        st.image(f"https://via.placeholder.com/150x150?text={user.get('name','?')[0]}", width=150)
 
     with col2:
         st.subheader(user.get("name", "—"))
-        st.write(f"📧 {user.get('email', '—')}")
+        st.write(f"📧 {email}")
         st.write(f"📱 {user.get('phone', 'Non renseigné')}")
         st.write(f"👤 {user.get('type', '—')}")
         st.write(f"📍 {user.get('location', 'Non précisé')}")
 
-
-        # User stats
         stats_col1, stats_col2, stats_col3 = st.columns(3)
-
         with stats_col1:
             st.metric("Rating", f"{user.get('rating', 0):.1f}⭐")
         with stats_col2:
             st.metric("Total Transactions", user.get('total_transactions', 0))
         with stats_col3:
-            verification_status = "✅ Verified" if user.get('verified', False) else "❌ Not Verified"
-            st.write(f"**Status:** {verification_status}")
+            verified = user.get('verified', False)
+            st.write(f"**Status:** {'✅ Verified' if verified else '❌ Not Verified'}")
 
     st.divider()
 
-    # Edit profile form
+    # ✏️ Edit profile form
     st.subheader("✏️ Edit Profile")
 
     with st.form("edit_profile"):
         col1, col2 = st.columns(2)
 
         with col1:
-            new_name = st.text_input("Full Name", value=user['name'])
-            new_phone = st.text_input("Phone Number", value=user['phone'])
+            new_name = st.text_input("Full Name", value=user.get('name', ''))
+            new_phone = st.text_input("Phone Number", value=user.get('phone', ''))
             new_location = st.selectbox(
                 "Location",
                 AFRICAN_LOCATIONS,
-                index=AFRICAN_LOCATIONS.index(user['location']) if user['location'] in AFRICAN_LOCATIONS else 0
+                index=AFRICAN_LOCATIONS.index(user.get('location', '')) if user.get('location', '') in AFRICAN_LOCATIONS else 0
             )
 
         with col2:
@@ -85,7 +84,6 @@ def display_profile_information():
                 height=100
             )
 
-            # Notification preferences
             st.subheader(get_translation("notification_preferences", st.session_state.language))
             email_notifications = st.checkbox(
                 get_translation("email_notifications", st.session_state.language),
@@ -105,44 +103,41 @@ def display_profile_information():
 
         if st.form_submit_button(get_translation("update_profile", st.session_state.language)):
             updates = {
-                'name': new_name,
-                'phone': new_phone,
-                'location': new_location,
-                'bio': bio,
-                'email_notifications': email_notifications,
-                'sms_notifications': sms_notifications,
-                'price_alerts': price_alerts
+                "name": new_name,
+                "phone": new_phone,
+                "location": new_location,
+                "bio": bio,
+                "email_notifications": email_notifications,
+                "sms_notifications": sms_notifications,
+                "price_alerts": price_alerts
             }
 
-            if update_user_profile(user['email'], updates):
-                # Update session state
+            if update_user_profile(email, updates):
                 st.session_state.user.update(updates)
                 st.success(get_translation("profile_updated", st.session_state.language))
                 st.rerun()
             else:
                 st.error("Failed to update profile. Please try again.")
 
-    # User's products (for farmers)
-    if user.get('type') == 'farmer' or user.get('type') == get_translation("farmer", st.session_state.language):
+    # 🌾 My Products section
+    if user.get('type') in ['farmer', get_translation("farmer", st.session_state.language)]:
         st.divider()
         st.subheader("🌾 My Products")
 
-        user_products = get_user_products(user['email'])
-
+        user_products = get_user_products(email)
         if user_products:
             for product in user_products:
                 with st.container():
                     prod_col1, prod_col2, prod_col3, prod_col4 = st.columns([2, 1, 1, 1])
-
                     with prod_col1:
-                        st.write(f"**{product['name']}**")
-                        st.write(product['description'])
+                        st.write(f"**{product.get('name','–')}**")
+                        st.write(product.get('description','—'))
 
                     with prod_col2:
-                        st.write(f"💰 ${product['price']:.2f}/kg")
+                        st.write(f"💰 ${product.get('price',0):.2f}/kg")
 
                     with prod_col3:
-                        st.write(f"📦 {product['quantity']} kg")
+                        st.write(f"📦 {product.get('quantity', 0)} kg")
                         availability = "🟢 Available" if product.get('available', True) else "🔴 Unavailable"
                         st.write(availability)
 
