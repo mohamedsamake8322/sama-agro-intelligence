@@ -161,20 +161,24 @@ def main_navigation():
     }
 
     selected_page = st.sidebar.radio(
-            get_translation("navigation", st.session_state.language),
-            options=list(pages.keys()),
-            format_func=lambda x: pages[x],
-            index=list(pages.keys()).index(st.session_state.current_page)
-        )
+        label=get_translation("navigation", st.session_state.language),
+        options=list(pages.keys()),
+        format_func=lambda x: pages[x],
+        index=list(pages.keys()).index(st.session_state.current_page)
+    )
 
-    if selected_page != st.session_state.current_page:
-            st.session_state.current_page = selected_page
-            st.rerun()
+    # ✅ Pour ne pas faire de rerun dès le premier chargement
+    if st.session_state.navigation_initialized and selected_page != st.session_state.current_page:
+        st.session_state.current_page = selected_page
+        st.rerun()
 
+    # 🔐 Déconnexion
     if st.sidebar.button(get_translation("logout", st.session_state.language)):
-            st.session_state.user = None
-            st.session_state.current_page = 'home'
-            st.rerun()
+        st.session_state.user = None
+        st.session_state.current_page = 'home'
+        st.session_state.pop("navigation_initialized", None)  # Pour réinitialiser proprement
+        st.rerun()
+
 
 def home_page():
     """Home page with map and overview"""
