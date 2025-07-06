@@ -31,19 +31,18 @@ def profile_page():
         display_user_settings()
 
 def display_profile_information():
-    """Display and edit user profile information"""
+    """Affiche et modifie le profil utilisateur"""
 
-    user = st.session_state.user
-    email = user.get("email")
+    user = st.session_state.get("user", {})
+    email = user.get("email", "")
     if not email:
-        st.error("Adresse email manquante. Impossible de charger le profil.")
+        st.error("Aucun utilisateur connecté. Veuillez vous authentifier.")
         return
 
-    # Profile header
+    # 📌 En-tête du profil
     col1, col2 = st.columns([1, 3])
     with col1:
-        st.image(f"https://via.placeholder.com/150x150?text={user.get('name','?')[0]}", width=150)
-
+        st.image(f"https://via.placeholder.com/150x150?text={user.get('name', '?')[0]}", width=150)
     with col2:
         st.subheader(user.get("name", "—"))
         st.write(f"📧 {email}")
@@ -62,7 +61,7 @@ def display_profile_information():
 
     st.divider()
 
-    # ✏️ Edit profile form
+    # ✏️ Formulaire de modification du profil
     st.subheader("✏️ Edit Profile")
 
     with st.form("edit_profile"):
@@ -71,11 +70,9 @@ def display_profile_information():
         with col1:
             new_name = st.text_input("Full Name", value=user.get('name', ''))
             new_phone = st.text_input("Phone Number", value=user.get('phone', ''))
-            new_location = st.selectbox(
-                "Location",
-                AFRICAN_LOCATIONS,
-                index=AFRICAN_LOCATIONS.index(user.get('location', '')) if user.get('location', '') in AFRICAN_LOCATIONS else 0
-            )
+            location_value = user.get('location', '')
+            location_index = AFRICAN_LOCATIONS.index(location_value) if location_value in AFRICAN_LOCATIONS else 0
+            new_location = st.selectbox("Location", AFRICAN_LOCATIONS, index=location_index)
 
         with col2:
             bio = st.text_area(
@@ -119,7 +116,7 @@ def display_profile_information():
             else:
                 st.error("Failed to update profile. Please try again.")
 
-    # 🌾 My Products section
+    # 🌾 Produits de l'utilisateur (si agriculteur)
     if user.get('type') in ['farmer', get_translation("farmer", st.session_state.language)]:
         st.divider()
         st.subheader("🌾 My Products")
@@ -130,26 +127,23 @@ def display_profile_information():
                 with st.container():
                     prod_col1, prod_col2, prod_col3, prod_col4 = st.columns([2, 1, 1, 1])
                     with prod_col1:
-                        st.write(f"**{product.get('name','–')}**")
-                        st.write(product.get('description','—'))
-
+                        st.write(f"**{product.get('name', '—')}**")
+                        st.write(product.get('description', '—'))
                     with prod_col2:
-                        st.write(f"💰 ${product.get('price',0):.2f}/kg")
-
+                        st.write(f"💰 ${product.get('price', 0):.2f}/kg")
                     with prod_col3:
                         st.write(f"📦 {product.get('quantity', 0)} kg")
                         availability = "🟢 Available" if product.get('available', True) else "🔴 Unavailable"
                         st.write(availability)
-
                     with prod_col4:
                         if st.button("Edit", key=f"edit_product_{product['id']}"):
                             st.session_state.editing_product = product['id']
                         if st.button("Delete", key=f"delete_product_{product['id']}"):
                             st.session_state.deleting_product = product['id']
-
                 st.divider()
         else:
             st.info("You haven't listed any products yet.")
+
 
 def display_transaction_history():
     """Display user transaction history"""
