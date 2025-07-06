@@ -136,6 +136,8 @@ def main_navigation():
     # ✅ Pour éviter la disparition soudaine de la sidebar à cause d'un rerun trop rapide
     if "navigation_initialized" not in st.session_state:
         st.session_state.navigation_initialized = True
+        st.session_state.current_page = selected_page  # ← Ajout essentiel
+
 
     st.sidebar.title(
         f"👋 {get_translation('welcome', st.session_state.language)} {st.session_state.user['name']}"
