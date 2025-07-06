@@ -28,6 +28,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+DEVELOPER_MODE = True
 
 def initialize_session_state():
     """Initialize session state variables"""
@@ -45,7 +46,7 @@ def initialize_session_state():
 def language_selector():
     """Language selection sidebar"""
     st.sidebar.title("🌍 " + get_translation("language", st.session_state.language))
-    
+
     language_options = {
         'en': 'English',
         'fr': 'Français',
@@ -53,14 +54,14 @@ def language_selector():
         'sw': 'Kiswahili',
         'ha': 'Hausa'
     }
-    
+
     selected_lang = st.sidebar.selectbox(
         get_translation("select_language", st.session_state.language),
         options=list(language_options.keys()),
         format_func=lambda x: language_options[x],
         index=list(language_options.keys()).index(st.session_state.language)
     )
-    
+
     if selected_lang != st.session_state.language:
         st.session_state.language = selected_lang
         st.rerun()
@@ -72,16 +73,16 @@ def user_authentication():
             get_translation("login", st.session_state.language),
             get_translation("register", st.session_state.language)
         ])
-        
+
         with auth_tab1:
             with st.form("login_form"):
                 email = st.text_input(get_translation("email", st.session_state.language))
                 password = st.text_input(
-                    get_translation("password", st.session_state.language), 
+                    get_translation("password", st.session_state.language),
                     type="password"
                 )
                 submit_login = st.form_submit_button(get_translation("login", st.session_state.language))
-                
+
                 if submit_login:
                     user = authenticate_user(email, password)
                     if user:
@@ -90,19 +91,19 @@ def user_authentication():
                         st.rerun()
                     else:
                         st.error(get_translation("invalid_credentials", st.session_state.language))
-        
+
         with auth_tab2:
             with st.form("register_form"):
                 name = st.text_input(get_translation("full_name", st.session_state.language))
                 email = st.text_input(get_translation("email", st.session_state.language))
                 phone = st.text_input(get_translation("phone", st.session_state.language))
                 password = st.text_input(
-                    get_translation("password", st.session_state.language), 
+                    get_translation("password", st.session_state.language),
                     type="password"
                 )
                 user_type = st.selectbox(
                     get_translation("user_type", st.session_state.language),
-                    [get_translation("farmer", st.session_state.language), 
+                    [get_translation("farmer", st.session_state.language),
                      get_translation("buyer", st.session_state.language)]
                 )
                 location = st.selectbox(
@@ -110,7 +111,7 @@ def user_authentication():
                     AFRICAN_LOCATIONS
                 )
                 submit_register = st.form_submit_button(get_translation("register", st.session_state.language))
-                
+
                 if submit_register:
                     if name and email and phone and password:
                         user = create_user(name, email, phone, password, user_type, location)
@@ -127,13 +128,13 @@ def main_navigation():
     """Main navigation sidebar"""
     if st.session_state.user:
         st.sidebar.title(f"👋 {get_translation('welcome', st.session_state.language)} {st.session_state.user['name']}")
-        
+
         # Offline mode toggle
         st.session_state.offline_mode = st.sidebar.checkbox(
             "📱 " + get_translation("offline_mode", st.session_state.language),
             value=st.session_state.offline_mode
         )
-        
+
         pages = {
             'home': '🏠 ' + get_translation("home", st.session_state.language),
             'marketplace': '🛒 ' + get_translation("marketplace", st.session_state.language),
@@ -143,18 +144,18 @@ def main_navigation():
             'weather': '🌤️ ' + get_translation("weather", st.session_state.language),
             'profile': '👤 ' + get_translation("profile", st.session_state.language)
         }
-        
+
         selected_page = st.sidebar.radio(
             get_translation("navigation", st.session_state.language),
             options=list(pages.keys()),
             format_func=lambda x: pages[x],
             index=list(pages.keys()).index(st.session_state.current_page)
         )
-        
+
         if selected_page != st.session_state.current_page:
             st.session_state.current_page = selected_page
             st.rerun()
-        
+
         if st.sidebar.button(get_translation("logout", st.session_state.language)):
             st.session_state.user = None
             st.session_state.current_page = 'home'
@@ -164,7 +165,7 @@ def home_page():
     """Home page with map and overview"""
     st.title("🌾 Sama AgroLink")
     st.subheader(get_translation("welcome_message", st.session_state.language))
-    
+
     # Quick stats
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -175,13 +176,13 @@ def home_page():
         st.metric(get_translation("transactions_today", st.session_state.language), "127")
     with col4:
         st.metric(get_translation("average_rating", st.session_state.language), "4.7⭐")
-    
+
     # Interactive map
     st.subheader(get_translation("marketplace_map", st.session_state.language))
-    
+
     # Create map centered on Africa
     m = folium.Map(location=[0, 20], zoom_start=3)
-    
+
     # Add sample farmer and buyer locations
     for location in AFRICAN_LOCATIONS[:20]:  # Show first 20 locations
         lat, lon = get_location_coordinates(location)
@@ -191,16 +192,16 @@ def home_page():
                 popup=f"{location} - {get_translation('farmers_and_buyers', st.session_state.language)}",
                 icon=folium.Icon(color='green', icon='leaf')
             ).add_to(m)
-    
+
     # Display map
     map_data = st_folium(m, width=700, height=500)
-    
+
     # Featured products
     st.subheader(get_translation("featured_products", st.session_state.language))
-    
+
     # Display sample products
     products_col1, products_col2, products_col3 = st.columns(3)
-    
+
     featured_crops = AFRICAN_CROPS[:3]
     for i, crop in enumerate(featured_crops):
         with [products_col1, products_col2, products_col3][i]:
@@ -215,11 +216,11 @@ def home_page():
 def my_products_page():
     """User's products page"""
     st.title("📦 " + get_translation("my_products", st.session_state.language))
-    
+
     if st.session_state.user['type'] == get_translation("farmer", st.session_state.language) or st.session_state.user.get('type') == 'farmer':
         # Add new product
         st.subheader(get_translation("add_new_product", st.session_state.language))
-        
+
         with st.form("add_product"):
             product_name = st.text_input(get_translation("product_name", st.session_state.language))
             category = st.selectbox(
@@ -235,17 +236,17 @@ def my_products_page():
                 min_value=1, value=100
             )
             description = st.text_area(get_translation("description", st.session_state.language))
-            
+
             if st.form_submit_button(get_translation("add_product", st.session_state.language)):
                 if product_name and price and quantity:
                     st.success(get_translation("product_added", st.session_state.language))
                 else:
                     st.error(get_translation("fill_all_fields", st.session_state.language))
-        
+
         # User's products
         st.subheader(get_translation("your_products", st.session_state.language))
         user_products = get_user_products(st.session_state.user['email'])
-        
+
         if not user_products:
             st.info(get_translation("no_products", st.session_state.language))
         else:
@@ -265,7 +266,7 @@ def my_products_page():
     else:
         # Buyer's orders and cart
         st.subheader(get_translation("shopping_cart", st.session_state.language))
-        
+
         if not st.session_state.cart:
             st.info(get_translation("cart_empty", st.session_state.language))
         else:
@@ -284,9 +285,9 @@ def my_products_page():
                         st.session_state.cart.pop(i)
                         st.rerun()
                 total_amount += item['total']
-            
+
             st.write(f"**{get_translation('total', st.session_state.language)}: ${total_amount:.2f}**")
-            
+
             if st.button(get_translation("proceed_to_payment", st.session_state.language)):
                 st.session_state.current_page = 'payment'
                 st.rerun()
@@ -294,14 +295,14 @@ def my_products_page():
 def payment_page():
     """Payment processing page"""
     st.title("💳 " + get_translation("payment", st.session_state.language))
-    
+
     if not st.session_state.cart:
         st.warning(get_translation("cart_empty", st.session_state.language))
         return
-    
+
     # Order summary
     st.subheader(get_translation("order_summary", st.session_state.language))
-    
+
     total_amount = 0
     for item in st.session_state.cart:
         col1, col2, col3 = st.columns([2, 1, 1])
@@ -312,20 +313,20 @@ def payment_page():
         with col3:
             st.write(f"${item['total']:.2f}")
         total_amount += item['total']
-    
+
     st.write(f"**{get_translation('total', st.session_state.language)}: ${total_amount:.2f}**")
-    
+
     # Payment method
     st.subheader(get_translation("payment_method", st.session_state.language))
-    
+
     payment_method = st.selectbox(
         get_translation("select_payment_method", st.session_state.language),
         ["M-Pesa", "Orange Money", "MTN Mobile Money", "Airtel Money", "Bank Transfer"]
     )
-    
+
     if payment_method in ["M-Pesa", "Orange Money", "MTN Mobile Money", "Airtel Money"]:
         phone_number = st.text_input(get_translation("mobile_number", st.session_state.language))
-        
+
         if st.button(get_translation("process_payment", st.session_state.language)):
             if phone_number:
                 result = process_mobile_payment(payment_method, phone_number, total_amount)
@@ -356,18 +357,19 @@ def get_location_coordinates(location):
     return coordinates.get(location, (0, 0))
 
 def main():
-    """Main application function"""
     initialize_session_state()
     language_selector()
-    
-    if st.session_state.user is None:
-        st.title("🌾 Sama AgroLink")
-        st.subheader(get_translation("welcome_message", st.session_state.language))
-        user_authentication()
-    else:
+
+    if DEVELOPER_MODE or st.session_state.user:
+        # Authentifié ou en mode développeur
+        if not st.session_state.user:
+            st.session_state.user = {
+                "name": "Développeur",
+                "email": "dev@example.com",
+                "type": "farmer"  # ou "buyer"
+            }
         main_navigation()
-        
-        # Import and use page modules
+
         if st.session_state.current_page == 'home':
             home_page()
         elif st.session_state.current_page == 'marketplace':
@@ -389,6 +391,8 @@ def main():
             profile_page()
         elif st.session_state.current_page == 'payment':
             payment_page()
+    else:
+        st.title("🌾 Sama AgroLink")
+        st.subheader(get_translation("welcome_message", st.session_state.language))
+        user_authentication()
 
-if __name__ == "__main__":
-    main()
