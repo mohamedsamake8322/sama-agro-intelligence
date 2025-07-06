@@ -370,34 +370,5 @@ def main():
                 "email": "dev@example.com",
                 "type": "farmer"
             }
-
-        main_navigation()
-
-        # Routage vers la bonne page
-        if st.session_state.current_page == 'home':
-            home_page()
-        elif st.session_state.current_page == 'marketplace':
-            from pages.marketplace import marketplace_page
-            marketplace_page()
-        elif st.session_state.current_page == 'my_products':
-            my_products_page()
-        elif st.session_state.current_page == 'messages':
-            from pages.messages import messages_page
-            messages_page()
-        elif st.session_state.current_page == 'analytics':
-            from pages.analytics import analytics_page
-            analytics_page()
-        elif st.session_state.current_page == 'weather':
-            from pages.weather import weather_page
-            weather_page()
-        elif st.session_state.current_page == 'profile':
-            from pages.profile import profile_page
-            profile_page()
-        elif st.session_state.current_page == 'payment':
-            payment_page()
-    else:
-        st.title("🌾 Sama AgroLink")
-        st.subheader(get_translation("welcome_message", st.session_state.language))
-        user_authentication()
 if __name__ == "__main__":
     main()
