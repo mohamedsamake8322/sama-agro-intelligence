@@ -128,45 +128,51 @@ def user_authentication():
                             st.error(get_translation("registration_failed", st.session_state.language))
                     else:
                         st.error(get_translation("fill_all_fields", st.session_state.language))
-
 def main_navigation():
     """Main navigation sidebar"""
-    if st.session_state.user:
-        st.sidebar.title(f"👋 {get_translation('welcome', st.session_state.language)} {st.session_state.user['name']}")
+    if not st.session_state.get("user"):
+        return  # Ne pas afficher la navigation si l'utilisateur n'est pas connecté
 
-        # Offline mode toggle
-        st.session_state.offline_mode = st.sidebar.checkbox(
-            "📱 " + get_translation("offline_mode", st.session_state.language),
-            value=st.session_state.offline_mode,
-            key="offline_mode_checkbox"
-        )
+    st.sidebar.title(
+        f"👋 {get_translation('welcome', st.session_state.language)} {st.session_state.user['name']}"
+    )
 
+    # ✅ Key unique basée sur l'utilisateur pour éviter les duplications sur les reruns
+    checkbox_key = f"offline_mode_checkbox_{st.session_state.user['email']}"
 
-        pages = {
-            'home': '🏠 ' + get_translation("home", st.session_state.language),
-            'marketplace': '🛒 ' + get_translation("marketplace", st.session_state.language),
-            'my_products': '📦 ' + get_translation("my_products", st.session_state.language),
-            'messages': '💬 ' + get_translation("messages", st.session_state.language),
-            'analytics': '📊 ' + get_translation("analytics", st.session_state.language),
-            'weather': '🌤️ ' + get_translation("weather", st.session_state.language),
-            'profile': '👤 ' + get_translation("profile", st.session_state.language)
-        }
+    st.session_state.offline_mode = st.sidebar.checkbox(
+        label="📱 " + get_translation("offline_mode", st.session_state.language),
+        value=st.session_state.offline_mode,
+        key=checkbox_key
+    )
 
-        selected_page = st.sidebar.radio(
-            get_translation("navigation", st.session_state.language),
-            options=list(pages.keys()),
-            format_func=lambda x: pages[x],
-            index=list(pages.keys()).index(st.session_state.current_page)
-        )
+    # 📍 Définition des pages disponibles
+    pages = {
+        'home': '🏠 ' + get_translation("home", st.session_state.language),
+        'marketplace': '🛒 ' + get_translation("marketplace", st.session_state.language),
+        'my_products': '📦 ' + get_translation("my_products", st.session_state.language),
+        'messages': '💬 ' + get_translation("messages", st.session_state.language),
+        'analytics': '📊 ' + get_translation("analytics", st.session_state.language),
+        'weather': '🌤️ ' + get_translation("weather", st.session_state.language),
+        'profile': '👤 ' + get_translation("profile", st.session_state.language)
+    }
 
-        if selected_page != st.session_state.current_page:
-            st.session_state.current_page = selected_page
-            st.rerun()
+    selected_page = st.sidebar.radio(
+        label=get_translation("navigation", st.session_state.language),
+        options=list(pages.keys()),
+        format_func=lambda x: pages[x],
+        index=list(pages.keys()).index(st.session_state.current_page)
+    )
 
-        if st.sidebar.button(get_translation("logout", st.session_state.language)):
-            st.session_state.user = None
-            st.session_state.current_page = 'home'
-            st.rerun()
+    if selected_page != st.session_state.current_page:
+        st.session_state.current_page = selected_page
+        st.rerun()
+
+    if st.sidebar.button(get_translation("logout", st.session_state.language)):
+        st.session_state.user = None
+        st.session_state.current_page = 'home'
+        st.rerun()
+
 
 def home_page():
     """Home page with map and overview"""
