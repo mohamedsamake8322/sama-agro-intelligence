@@ -133,20 +133,23 @@ def main_navigation():
     if not st.session_state.get("user"):
         return  # Ne pas afficher la navigation si l'utilisateur n'est pas connecté
 
+    # ✅ Pour éviter la disparition soudaine de la sidebar à cause d'un rerun trop rapide
+    if "navigation_initialized" not in st.session_state:
+        st.session_state.navigation_initialized = True
+
     st.sidebar.title(
         f"👋 {get_translation('welcome', st.session_state.language)} {st.session_state.user['name']}"
     )
 
-    # ✅ Key unique basée sur l'utilisateur pour éviter les duplications sur les reruns
+    # ✅ Key unique par utilisateur pour éviter les duplications
     checkbox_key = f"offline_mode_checkbox_{st.session_state.user['email']}"
-
     st.session_state.offline_mode = st.sidebar.checkbox(
         label="📱 " + get_translation("offline_mode", st.session_state.language),
         value=st.session_state.offline_mode,
         key=checkbox_key
     )
 
-    # 📍 Définition des pages disponibles
+    # 📍 Définition des pages
     pages = {
         'home': '🏠 ' + get_translation("home", st.session_state.language),
         'marketplace': '🛒 ' + get_translation("marketplace", st.session_state.language),
@@ -164,13 +167,16 @@ def main_navigation():
         index=list(pages.keys()).index(st.session_state.current_page)
     )
 
-    if selected_page != st.session_state.current_page:
+    # ✅ Pour ne pas faire de rerun dès le premier chargement
+    if st.session_state.navigation_initialized and selected_page != st.session_state.current_page:
         st.session_state.current_page = selected_page
         st.rerun()
 
+    # 🔐 Déconnexion
     if st.sidebar.button(get_translation("logout", st.session_state.language)):
         st.session_state.user = None
         st.session_state.current_page = 'home'
+        st.session_state.pop("navigation_initialized", None)  # Pour réinitialiser proprement
         st.rerun()
 
 
