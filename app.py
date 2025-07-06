@@ -368,12 +368,43 @@ def main():
     language_selector()
 
     if DEVELOPER_MODE or st.session_state.user:
-        # Simule un utilisateur connecté si en mode développeur
-        if not st.session_state.user:
+        # Simule un utilisateur en mode développeur
+        if DEVELOPER_MODE and not st.session_state.user:
             st.session_state.user = {
                 "name": "Développeur",
                 "email": "dev@example.com",
                 "type": "farmer"
             }
+
+        # ✅ Empêche double affichage
+        if not st.session_state.get("main_navigation_rendered"):
+            st.session_state["main_navigation_rendered"] = True
+            main_navigation()
+
+        # Affiche la bonne page
+        current_page = st.session_state.current_page
+        if current_page == 'home':
+            home_page()
+        elif current_page == 'marketplace':
+            marketplace_page()
+        elif current_page == 'my_products':
+            my_products_page()
+        elif current_page == 'messages':
+            messages_page()
+        elif current_page == 'analytics':
+            analytics_page()
+        elif current_page == 'weather':
+            weather_page()
+        elif current_page == 'profile':
+            profile_page()
+        elif current_page == 'payment':
+            payment_page()
+
+    else:
+        # 🔐 Si l'utilisateur n'est pas connecté
+        st.title("🌾 Sama AgroLink")
+        st.subheader(get_translation("welcome_message", st.session_state.language))
+        user_authentication()
+
 if __name__ == "__main__":
     main()
