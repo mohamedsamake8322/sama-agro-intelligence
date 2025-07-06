@@ -43,11 +43,12 @@ def display_profile_information():
         st.image(f"https://via.placeholder.com/150x150?text={user['name'][0]}", width=150)
 
     with col2:
-        st.subheader(user['name'])
-        st.write(f"📧 {user['email']}")
-        st.write(f"📱 {user['phone']}")
-        st.write(f"👤 {user['type']}")
-        st.write(f"📍 {user['location']}")
+        st.subheader(user.get("name", "—"))
+        st.write(f"📧 {user.get('email', '—')}")
+        st.write(f"📱 {user.get('phone', 'Non renseigné')}")
+        st.write(f"👤 {user.get('type', '—')}")
+        st.write(f"📍 {user.get('location', 'Non précisé')}")
+
 
         # User stats
         stats_col1, stats_col2, stats_col3 = st.columns(3)
