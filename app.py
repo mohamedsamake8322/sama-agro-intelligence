@@ -132,8 +132,10 @@ def main_navigation():
         # Offline mode toggle
         st.session_state.offline_mode = st.sidebar.checkbox(
             "📱 " + get_translation("offline_mode", st.session_state.language),
-            value=st.session_state.offline_mode
+            value=st.session_state.offline_mode,
+            key="offline_mode_checkbox"
         )
+
 
         pages = {
             'home': '🏠 ' + get_translation("home", st.session_state.language),

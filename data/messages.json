@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "from": "farmer1@example.com",
+    "to": "dev@example.com",
+    "subject": "Maize Quality Inquiry",
+    "content": "Hello! I'm interested in your maize. Can you tell me more about the quality and harvest date?",
+    "timestamp": "2025-07-06T16:17:05.428159",
+    "read": false
+  },
+  {
+    "id": 2,
+    "from": "buyer2@example.com",
+    "to": "dev@example.com",
+    "subject": "Bulk Order Request",
+    "content": "Hi, I would like to place a bulk order for 500kg of rice. What's your best price?",
+    "timestamp": "2025-07-05T18:17:05.428159",
+    "read": true
+  },
+  {
+    "id": 3,
+    "from": "system@samaagrolink.com",
+    "to": "dev@example.com",
+    "subject": "Market Price Alert",
+    "content": "The price of cassava in your region has increased by 15% this week. This might be a good time to sell!",
+    "timestamp": "2025-07-03T18:17:05.428159",
+    "read": false
+  }
+]
