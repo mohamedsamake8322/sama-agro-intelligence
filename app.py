@@ -20,6 +20,11 @@ from utils.weather import get_weather_info
 from utils.payments import process_mobile_payment
 from data.crops import AFRICAN_CROPS
 from data.locations import AFRICAN_LOCATIONS
+from modules.marketplace import marketplace_page
+from modules.analytics import analytics_page
+from modules.messages import messages_page
+from modules.weather import weather_page
+from modules.profile import profile_page
 
 # Page configuration
 st.set_page_config(
