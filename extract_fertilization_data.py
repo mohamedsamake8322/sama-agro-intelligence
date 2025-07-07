@@ -5,7 +5,7 @@ import re
 import json
 
 # 📁 Nouveau chemin local vers ton guide de fertilisation
-PDF_PATH = r"C:\SamaAgroIntelligence\Final_FRG_24_compressed.pdf"
+PDF_PATH = r"C:\SamaAgroIntelligence\1.pdf"
 print("🔗 Chemin utilisé :", PDF_PATH)
 
 # 📂 Dossier de sortie
