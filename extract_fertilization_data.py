@@ -5,7 +5,7 @@ import re
 import json
 
 # 📁 Chemin local vers ton guide de fertilisation
-PDF_PATH = r"C:\Downloads\New folder\Final_FRG_24_compressed.pdf"
+PDF_PATH = r"C:\Users\moham\Music\1\Final_FRG_24_compressed.pdf"
 
 # 📂 Dossier de sortie
 OUTPUT_DIR = "fertilization_outputs"
