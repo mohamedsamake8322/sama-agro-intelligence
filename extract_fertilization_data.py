@@ -4,7 +4,7 @@ import os
 import re
 import json
 
-# 📁 Nouveau chemin local vers ton guide de fertilisation
+# 📁 Nouveau chemin vers ton guide de fertilisation
 PDF_PATH = r"C:\SamaAgroIntelligence\1.pdf"
 print("🔗 Chemin utilisé :", PDF_PATH)
 
@@ -15,13 +15,14 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # 📦 Conteneur brut
 raw_rows = []
 
-# 🧠 Nettoie le texte
+# 🧠 Nettoyage sécurisé
 def clean(cell):
-    if cell is None:
+    try:
+        return re.sub(r'\s+', ' ', str(cell)).strip()
+    except:
         return ""
-    return re.sub(r'\s+', ' ', cell).strip()
 
-# 📖 Lecture du PDF
+# 📖 Lecture du PDF avec filtre sur pages pertinentes
 print("🔍 Lecture du PDF...")
 with pdfplumber.open(PDF_PATH) as pdf:
     for i, page in enumerate(pdf.pages):
@@ -36,29 +37,30 @@ with pdfplumber.open(PDF_PATH) as pdf:
 
 print(f"✅ {len(raw_rows)} lignes extraites brutes")
 
-# ⛏️ Tentative de structure automatique (tu pourras ajuster ensuite)
+# ⛏️ DataFrame brut
 df_raw = pd.DataFrame(raw_rows)
 df_raw.to_excel(os.path.join(OUTPUT_DIR, "fertilization_raw.xlsx"), index=False)
 
-# 🧪 Tentative : filtrer les lignes qui contiennent des cultures
+# 🧪 Filtrage robuste par nom de culture
 cultures = ['maize', 'rice', 'potato', 'tomato', 'bean', 'cabbage', 'onion', 'wheat']
-df_filtered = df_raw[df_raw.apply(lambda row: any(culture in ' '.join(row).lower() for culture in cultures), axis=1)]
+def row_contains_culture(row):
+    row_str = ' '.join([str(c) if c else '' for c in row]).lower()
+    return any(culture in row_str for culture in cultures)
+
+df_filtered = df_raw[df_raw.apply(row_contains_culture, axis=1)]
 df_filtered.to_excel(os.path.join(OUTPUT_DIR, "fertilization_cleaned.xlsx"), index=False)
 
-# (Optionnel) Générer un petit JSON par culture
+# 📦 Génération JSON par culture
 data_json = {}
-
 for _, row in df_filtered.iterrows():
-    joined = [c for c in row if c]
+    joined = [clean(c) for c in row if c]
     name = next((c for c in joined if any(culture in c.lower() for culture in cultures)), None)
     if not name:
         continue
     key = name.lower()
-    if key not in data_json:
-        data_json[key] = []
-    data_json[key].append(joined)
+    data_json.setdefault(key, []).append(joined)
 
 with open(os.path.join(OUTPUT_DIR, "fertilization_data.json"), "w", encoding="utf-8") as f:
     json.dump(data_json, f, ensure_ascii=False, indent=2)
 
-print("📁 Fichiers générés dans :", os.path.abspath(OUTPUT_DIR))
+print("📁 Extraction terminée dans :", os.path.abspath(OUTPUT_DIR))
