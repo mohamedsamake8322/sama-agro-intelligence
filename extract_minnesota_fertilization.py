@@ -5,7 +5,7 @@ import re
 import json
 
 # 📁 Ton fichier PDF (mets le nom exact que tu as téléchargé)
-PDF_PATH = r"C:\SamaAgroIntelligence\Fertilizer-Guidelines-2023.pdf"
+PDF_PATH = r"C:\SamaAgroIntelligence\2.pdf"
 OUTPUT_DIR = "minnesota_outputs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
