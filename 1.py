@@ -9,8 +9,8 @@ import pandas as pd
 # === Paramètres ===
 train_dir = r"C:\Users\moham\Pictures\plantdataset\train"
 output_dir = "dataset"
-min_images_per_class = 30
-max_images_to_download = 100
+min_images_per_class = 1
+max_images_to_download = 30
 
 # === Chargement du modèle BLIP ===
 device = "cuda" if torch.cuda.is_available() else "cpu"
