@@ -4,7 +4,7 @@ import pandas as pd
 from tqdm import tqdm
 
 # 📁 Chemin du dossier GAEZ Thème 6
-base_path = r"C:\Users\moham\Music\2\Écarts de rendement et de production"
+base_path = r"C:\Users\moham\Music\2\C:\Users\moham\Music\2\Rendements et production réels"
 
 # 📋 Initialisation liste pour collecter les données
 records = []
