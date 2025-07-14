@@ -1,44 +1,66 @@
 import os
 import rasterio
-import pandas as pd
-from tqdm import tqdm
+import numpy as np
+import csv
+from concurrent.futures import ThreadPoolExecutor
 
-# 📁 Chemin du dossier GAEZ Thème 6
-base_path = r"C:\Users\moham\Music\2\C:\Users\moham\Music\2\Rendements et production réels"
+# 📁 Répertoire principal contenant les données GAEZ
+base_path = r"C:\Users\moham\Music\2\Rendements et production réels"
+output_csv = "gaez_gap_extracted_stream.csv"
 
-# 📋 Initialisation liste pour collecter les données
-records = []
+# 🔧 Taille de la fenêtre (en pixels) pour lire par morceaux
+window_size = 1024  # Peut augmenter ou diminuer selon ta RAM
 
-# 🔁 Parcours des sous-dossiers
-for category in ["I", "R", "T", "V"]:
-    for year in ["2000", "2010"]:
-        folder_path = os.path.join(base_path, category, year)
-        if not os.path.exists(folder_path):
-            continue
+# 🧵 Fonction pour traiter un seul fichier
+def process_tif(file_path, category, year, filename):
+    data = []
+    try:
+        with rasterio.open(file_path) as src:
+            transform = src.transform
+            nodata = src.nodata
 
-        # 🔁 Parcours des fichiers .tif
-        for filename in tqdm(os.listdir(folder_path), desc=f"{category}/{year}"):
-            if filename.endswith(".tif"):
-                file_path = os.path.join(folder_path, filename)
-                with rasterio.open(file_path) as src:
-                    band = src.read(1)
-                    transform = src.transform
+            # Parcours par fenêtre
+            for ji, window in src.block_windows(1):
+                band = src.read(1, window=window)
+                mask = (band != nodata) & (~np.isnan(band))
+                rows, cols = np.where(mask)
 
-                    for row in range(band.shape[0]):
-                        for col in range(band.shape[1]):
-                            value = band[row, col]
-                            if value != src.nodata and value is not None:
-                                x, y = transform * (col, row)
-                                records.append({
-                                    "x": x,
-                                    "y": y,
-                                    "value": value,
-                                    "year": int(year),
-                                    "category": category,
-                                    "layer": filename
-                                })
+                if rows.size == 0:
+                    continue
 
-# 📄 Conversion en DataFrame et export
-df = pd.DataFrame(records)
-df.to_csv("gaez_yield_gap_data.csv", index=False, encoding="utf-8")
-print("✅ Données exportées dans gaez_yield_gap_data.csv")
+                xs, ys = rasterio.transform.xy(transform, rows + window.row_off, cols + window.col_off)
+                for x, y, val in zip(xs, ys, band[rows, cols]):
+                    data.append([x, y, val, int(year), category, filename])
+    except Exception as e:
+        print(f"❌ Erreur sur {file_path} : {e}")
+    return data
+
+# ✍️ Écriture dans le CSV principal
+with open(output_csv, mode='w', newline='', encoding='utf-8') as f:
+    writer = csv.writer(f)
+    writer.writerow(["x", "y", "value", "year", "category", "layer"])
+
+    tasks = []
+
+    with ThreadPoolExecutor(max_workers=4) as executor:  # 💡 adapte max_workers à ton CPU
+        for category in os.listdir(base_path):
+            cat_path = os.path.join(base_path, category)
+            if not os.path.isdir(cat_path): continue
+
+            for year in os.listdir(cat_path):
+                year_path = os.path.join(cat_path, year)
+                if not os.path.isdir(year_path): continue
+
+                print(f"🔍 Traitement : {category}/{year}")
+
+                for filename in os.listdir(year_path):
+                    if not filename.endswith(".tif"): continue
+                    file_path = os.path.join(year_path, filename)
+                    tasks.append(executor.submit(process_tif, file_path, category, year, filename))
+
+        # Collecte les résultats au fur et à mesure
+        for task in tasks:
+            for row in task.result():
+                writer.writerow(row)
+
+print(f"✅ Terminé : les résultats sont dans {output_csv}")
